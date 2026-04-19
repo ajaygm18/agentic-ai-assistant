@@ -20,17 +20,24 @@ class VectorStoreManager:
         with self._lock:
             if self._vector_store is not None:
                 return self._vector_store
+            return self._new_store()
 
-            persist_dir = self.settings.chroma_persist_directory
-            if not persist_dir.exists():
-                return None
+    def _new_store(self) -> Chroma | None:
+        persist_dir = self.settings.chroma_persist_directory
+        if not persist_dir.exists():
+            return None
 
-            self._vector_store = Chroma(
-                collection_name=self.settings.collection_name,
-                persist_directory=str(persist_dir),
-                embedding_function=get_embeddings(),
-            )
-            return self._vector_store
+        self._vector_store = Chroma(
+            collection_name=self.settings.collection_name,
+            persist_directory=str(persist_dir),
+            embedding_function=get_embeddings(),
+        )
+        return self._vector_store
+
+    def reload(self) -> Chroma | None:
+        with self._lock:
+            self._vector_store = None
+            return self._new_store()
 
     def rebuild(self, documents: list[Document]) -> Chroma:
         if not documents:
@@ -66,14 +73,23 @@ class VectorStoreManager:
             return self._vector_store
 
     def has_index(self) -> bool:
-        store = self.load()
-        return bool(store and self.count_chunks() > 0)
+        return self.count_chunks() > 0
 
     def count_chunks(self) -> int:
         store = self.load()
         if store is None:
             return 0
-        return int(store._collection.count())
+        try:
+            return int(store._collection.count())
+        except Exception:  # noqa: BLE001
+            self.reload()
+            store = self.load()
+            if store is None:
+                return 0
+            try:
+                return int(store._collection.count())
+            except Exception:  # noqa: BLE001
+                return 0
 
     @property
     def persist_directory(self) -> Path:
