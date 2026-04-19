@@ -39,7 +39,7 @@ function Wait-HttpReady {
 }
 
 Write-Host "Starting Anti-API from $AntiApiDir"
-Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "start.bat" -WorkingDirectory $AntiApiDir
+Start-Process -FilePath "bun" -ArgumentList @("run", "src/main.ts", "start") -WorkingDirectory $AntiApiDir
 
 if (-not (Wait-HttpReady -Url "http://localhost:$AntiApiPort/health" -TimeoutSeconds 180)) {
     throw "Anti-API did not become ready on http://localhost:$AntiApiPort/health"
