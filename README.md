@@ -185,8 +185,28 @@ python scripts/ingest.py
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Open the docs UI at `http://localhost:8000/docs`.
+Open the product UI at `http://localhost:8000/`.
+Open the API docs at `http://localhost:8000/docs`.
 The MCP HTTP endpoint is available at `http://localhost:8000/mcp`.
+
+## Browser UI
+
+The app includes a normal interactive browser interface at:
+
+```text
+http://localhost:8000/
+```
+
+The UI supports:
+
+- chat with session memory
+- quick prompt buttons
+- document ingestion from the browser
+- health/model/vector-store status
+- source display for RAG responses
+- tools-used display
+- execution trace display
+- loading existing sessions by `session_id`
 
 ## How ingestion works
 

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import HTMLResponse
 
 from app.core.config import get_settings
 from app.core.container import (
@@ -21,9 +22,15 @@ from app.models.api import (
     IngestResponse,
     SessionResponse,
 )
+from app.web_ui import render_chat_ui
 
 
 router = APIRouter()
+
+
+@router.get("/", response_class=HTMLResponse)
+def chat_ui() -> HTMLResponse:
+    return HTMLResponse(render_chat_ui())
 
 
 @router.get("/health", response_model=HealthResponse)
