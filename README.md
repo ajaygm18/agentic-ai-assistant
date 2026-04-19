@@ -335,23 +335,6 @@ curl -X POST http://localhost:8000/chat \
   }'
 ```
 
-## Interview-ready architecture explanation
-
-I built a modular agentic assistant on FastAPI using LangChain, OpenAI-compatible APIs, and the real Model Context Protocol. The workflow starts with an explicit router that classifies requests into direct, retrieval, tool, or hybrid paths. A dedicated planner model produces a short execution plan using an MCP prompt, while the main execution model handles final synthesis. The app uses a real MCP server that is mounted over streamable HTTP at `/mcp`, and the internal MCP client can also connect over stdio to execute tools, fetch retrieval results, and expose session or catalog resources in a protocol-compliant way. For grounding, documents are chunked, embedded with `text-embedding-3-small`, and stored in Chroma through Anti-API. For action-taking, deterministic tools like calculator, timestamp lookup, knowledge search, and session summary are executed through the MCP server before the final answer is composed.
-
-## Resume bullet
-
-Built an Agentic AI Assistant with real MCP server/client integration, a mounted `/mcp` endpoint, RAG, tool calling, LangChain, shared session memory, and FastAPI. Developed modular multi-step reasoning workflows, protocol-based tool and context exchange, and scalable API-driven grounded response generation.
-
-## Interview talking points
-
-- Why explicit workflow routing is easier to debug than a single opaque agent loop.
-- How MCP tools, prompts, and resources were separated behind a real protocol boundary instead of remaining in-process helper calls.
-- Why deterministic tools should handle exact operations instead of relying on raw LLM generation, especially when the chosen execution model has provider-specific tool-calling constraints.
-- Why retrieval metadata and source citations matter for trust and explainability.
-- How the shared file-backed memory can later be swapped to Redis without changing agent logic or MCP tool contracts.
-- Why Anti-API is a practical OpenAI-compatible local gateway for interview demos and local experimentation.
-
 ## Possible future improvements
 
 - Replace the file-backed session store with Redis or Postgres-backed memory.
