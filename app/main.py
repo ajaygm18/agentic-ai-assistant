@@ -9,6 +9,7 @@ from app.core.config import get_settings
 from app.core.container import get_vector_store_manager
 from app.core.logging import configure_logging
 from app.mcp.server import mcp
+from scripts.bootstrap_antiapi_routing import bootstrap_routing
 
 mcp_http_app = mcp.streamable_http_app()
 
@@ -18,6 +19,10 @@ async def lifespan(_: FastAPI):
     settings = get_settings()
     configure_logging(settings.log_level)
     get_vector_store_manager().load()
+    try:
+        bootstrap_routing(settings.llm_base_url.removesuffix("/v1"))
+    except Exception:
+        pass
     async with mcp.session_manager.run():
         yield
 
