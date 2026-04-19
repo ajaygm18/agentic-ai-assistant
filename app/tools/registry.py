@@ -4,6 +4,7 @@ from app.mcp.client import MCPClient
 from app.tools.implementations import (
     CalculatorInput,
     KnowledgeLookupInput,
+    McpCatalogInput,
     SessionSummaryInput,
     TimestampInput,
 )
@@ -31,6 +32,30 @@ class ToolRegistry:
                 {"session_id": session_id, "max_turns": max_turns},
             )["text"]
 
+        def mcp_catalog(include_prompts: bool = True, include_resources: bool = True) -> str:
+            tools = self.mcp_client.list_tools()
+            lines = ["Available MCP tools:"]
+            for tool in tools:
+                description = f" - {tool['description']}" if tool.get("description") else ""
+                lines.append(f"- {tool['name']}{description}")
+
+            if include_prompts:
+                prompts = self.mcp_client.list_prompts()
+                lines.append("\nAvailable MCP prompts:")
+                for prompt in prompts:
+                    description = f" - {prompt['description']}" if prompt.get("description") else ""
+                    lines.append(f"- {prompt['name']}{description}")
+
+            if include_resources:
+                resources = self.mcp_client.list_resources()
+                lines.append("\nAvailable MCP resources:")
+                for resource in resources:
+                    label = resource.get("uri") or resource.get("name")
+                    description = f" - {resource['description']}" if resource.get("description") else ""
+                    lines.append(f"- {label}{description}")
+
+            return "\n".join(lines)
+
         return [
             StructuredTool.from_function(
                 func=calculator,
@@ -55,5 +80,11 @@ class ToolRegistry:
                 name="session_summary",
                 description="Summarize recent turns from the current conversation session.",
                 args_schema=SessionSummaryInput,
+            ),
+            StructuredTool.from_function(
+                func=mcp_catalog,
+                name="mcp_catalog",
+                description="List live MCP tools, prompts, and resources exposed by the assistant MCP server.",
+                args_schema=McpCatalogInput,
             ),
         ]

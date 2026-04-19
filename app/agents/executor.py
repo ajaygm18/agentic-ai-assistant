@@ -147,6 +147,9 @@ class AgentExecutor:
         if "session" in query or "chat so far" in query or "conversation" in query:
             calls.append(("session_summary", {"max_turns": 6}))
 
+        if "mcp" in query and any(keyword in query for keyword in ("tool", "tools", "resource", "resources", "prompt", "prompts", "available", "list")):
+            calls.append(("mcp_catalog", {"include_prompts": True, "include_resources": True}))
+
         if state.route.value == "tool" and any(keyword in query for keyword in ("handbook", "policy", "release", "doc", "knowledge")):
             calls.append(("knowledge_lookup", {"query": state.user_query.user_message, "top_k": 3}))
 

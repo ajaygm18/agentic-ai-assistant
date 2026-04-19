@@ -59,7 +59,15 @@ class WorkflowRouter:
         requests_tools = any(keyword in text for keyword in self._tool_keywords) or bool(
             re.search(r"\d+\s*[\+\-\*/]\s*\d+", text)
         )
+        requests_mcp_catalog = "mcp" in text and any(
+            keyword in text
+            for keyword in ("tool", "tools", "resource", "resources", "prompt", "prompts", "available", "list")
+        )
         looks_complex = any(keyword in text for keyword in self._complex_keywords) and len(text.split()) > 8
+
+        if requests_mcp_catalog:
+            reasons.append("query asks for live MCP server capabilities")
+            return RoutingDecision(route=RouteType.TOOL, rationale=reasons)
 
         if is_conversational and not requests_knowledge and not requests_tools:
             reasons.append("short conversational query without retrieval or tool signals")

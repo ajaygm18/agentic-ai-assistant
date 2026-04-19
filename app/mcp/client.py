@@ -20,6 +20,15 @@ class MCPClient:
     def call_tool(self, name: str, arguments: dict[str, Any] | None = None) -> dict[str, Any]:
         return asyncio.run(self._call_tool(name, arguments or {}))
 
+    def list_tools(self) -> list[dict[str, Any]]:
+        return asyncio.run(self._list_tools())
+
+    def list_prompts(self) -> list[dict[str, Any]]:
+        return asyncio.run(self._list_prompts())
+
+    def list_resources(self) -> list[dict[str, Any]]:
+        return asyncio.run(self._list_resources())
+
     def read_resource(self, uri: str) -> str:
         return asyncio.run(self._read_resource(uri))
 
@@ -41,6 +50,46 @@ class MCPClient:
                     "text": self._content_to_text(getattr(result, "content", [])),
                     "raw": result,
                 }
+
+    async def _list_tools(self) -> list[dict[str, Any]]:
+        async with stdio_client(self._server_params()) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                result = await session.list_tools()
+                return [
+                    {
+                        "name": tool.name,
+                        "description": tool.description or "",
+                    }
+                    for tool in result.tools
+                ]
+
+    async def _list_prompts(self) -> list[dict[str, Any]]:
+        async with stdio_client(self._server_params()) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                result = await session.list_prompts()
+                return [
+                    {
+                        "name": prompt.name,
+                        "description": prompt.description or "",
+                    }
+                    for prompt in result.prompts
+                ]
+
+    async def _list_resources(self) -> list[dict[str, Any]]:
+        async with stdio_client(self._server_params()) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                result = await session.list_resources()
+                return [
+                    {
+                        "uri": str(resource.uri),
+                        "name": resource.name or "",
+                        "description": resource.description or "",
+                    }
+                    for resource in result.resources
+                ]
 
     async def _read_resource(self, uri: str) -> str:
         async with stdio_client(self._server_params()) as (read, write):

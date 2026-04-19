@@ -31,6 +31,11 @@ class SessionSummaryInput(BaseModel):
     max_turns: int = Field(default=6, ge=1, le=12)
 
 
+class McpCatalogInput(BaseModel):
+    include_prompts: bool = Field(default=True)
+    include_resources: bool = Field(default=True)
+
+
 ALLOWED_BIN_OPS = {
     ast.Add: operator.add,
     ast.Sub: operator.sub,
